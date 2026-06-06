@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Personality Adjectives Explorer - Modo Quiz</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+  .container {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    max-width: 800px;
+    width: 100%;
+    padding: 40px;
+  }
+  h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 2rem;
+  }
+  .subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+  }
+  .progress-bar {
+    width: 100%;
+    height: 12px;
+    background: #e0e0e0;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 30px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+  .question-counter {
+    text-align: right;
+    color: #888;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+  }
+  .question-box {
+    margin-bottom: 25px;
+  }
+  .question-text {
+    font-size: 1.3rem;
+    color: #333;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .option-btn {
+    padding: 15px 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    background: #fafafa;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: #444;
+    transition: all 0.2s ease;
+    text-align: left;
+  }
+  .option-btn:hover:not(:disabled) {
+    border-color: #667eea;
+    background: #f0f0ff;
+    transform: translateX(5px);
+  }
+  .option-btn.correct {
+    border-color: #28a745;
+    background: #d4edda;
+    color: #155724;
+  }
+  .option-btn.wrong {
+    border-color: #dc3545;
+    background: #f8d7da;
+    color: #721c24;
+  }
+  .option-btn:disabled {
+    cursor: default;
+  }
+  .feedback {
+    margin-top: 15px;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 1rem;
+    display: none;
+  }
+  .feedback.show { display: block; }
+  .feedback.correct { background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
+  .feedback.wrong { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+  .nav-btns {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 25px;
+  }
+  .btn {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-next {
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    color: #fff;
+  }
+  .btn-next:hover { opacity: 0.9; transform: scale(1.02); }
+  .btn-next:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-prev {
+    background: #e0e0e0;
+    color: #555;
+  }
+  .btn-prev:hover { background: #d0d0d0; }
+  .score-box {
+    text-align: center;
+    padding: 30px;
+  }
+  .score-circle {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    font-weight: bold;
+    margin: 0 auto 20px;
+    box-shadow: 0 10px 30px rgba(102,126,234,0.4);
+  }
+  .score-text {
+    font-size: 1.3rem;
+    color: #555;
+    margin-bottom: 20px;
+  }
+  .open-question {
+    margin-top: 30px;
+    text-align: left;
+  }
+  .open-question label {
+    display: block;
+    font-size: 1.1rem;
+    color: #333;
+    margin-bottom: 10px;
+  }
+  .open-question textarea {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 1rem;
+    resize: vertical;
+    min-height: 100px;
+    font-family: inherit;
+  }
+  .open-question textarea:focus {
+    outline: none;
+    border-color: #667eea;
+  }
+  .btn-submit {
+    background: #28a745;
+    color: #fff;
+    margin-top: 15px;
+  }
+  .btn-submit:hover { background: #218838; }
+  .btn-restart {
+    background: #667eea;
+    color: #fff;
+    margin-top: 15px;
+  }
+  .hidden { display: none !important; }
+  .emoji { font-size: 1.5rem; margin-right: 8px; }
+</style>
+</head>
+<body>
+<div class="container" id="app">
+  <h1>🧠 Personality Adjectives Explorer</h1>
+  <p class="subtitle">Modo Quiz — Love and Friendship</p>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="question-counter" id="counter">Pregunta 1 de 10</div>
+  <div id="quizArea"></div>
+</div>
+
+<script>
+const questions = [
+  {
+    q: "Which adjective describes someone who never breaks their promises?",
+    options: ["Jealous", "Reliable", "Stubborn", "Adventurous"],
+    correct: 1,
+    feedback: "✅ Reliable = someone you can trust and depend on. Example: 'She has always been reliable.'"
+  },
+  {
+    q: "What do you call a person who thinks about others' feelings and needs?",
+    options: ["Cheerful", "Sensitive", "Caring", "Honest"],
+    correct: 2,
+    feedback: "✅ Caring = someone who shows kindness and concern for others. Example: 'He has been very caring with his little sister.'"
+  },
+  {
+    q: "Which adjective fits a friend who stays with you even in difficult times?",
+    options: ["Loyal", "Creative", "Patient", "Adventurous"],
+    correct: 0,
+    feedback: "✅ Loyal = someone who supports you no matter what. Example: 'My best friend has always been loyal to me.'"
+  },
+  {
+    q: "What adjective describes someone who tells the truth and doesn't lie?",
+    options: ["Supportive", "Honest", "Jealous", "Stubborn"],
+    correct: 1,
+    feedback: "✅ Honest = someone who tells the truth. Example: 'She has always been honest with her friends.'"
+  },
+  {
+    q: "Which word describes a friend who helps and encourages you when you have problems?",
+    options: ["Sensitive", "Supportive", "Cheerful", "Reliable"],
+    correct: 1,
+    feedback: "✅ Supportive = someone who gives help and encouragement. Example: 'He has been very supportive during my exams.'"
+  },
+  {
+    q: "What do you call someone who can wait calmly without getting angry?",
+    options: ["Patient", "Stubborn", "Creative", "Jealous"],
+    correct: 0,
+    feedback: "✅ Patient = someone who can wait or tolerate difficulties calmly. Example: 'My teacher has been very patient with me.'"
+  },
+  {
+    q: "Which adjective describes someone who has original ideas and imagination?",
+    options: ["Honest", "Loyal", "Creative", "Reliable"],
+    correct: 2,
+    feedback: "✅ Creative = someone who uses imagination to create new things. Example: 'She has always been creative with her art projects.'"
+  },
+  {
+    q: "What adjective fits a person who loves trying new and exciting experiences?",
+    options: ["Sensitive", "Patient", "Adventurous", "Supportive"],
+    correct: 2,
+    feedback: "✅ Adventurous = someone who enjoys new and exciting experiences. Example: 'He has travelled a lot. He has always been adventurous.'"
+  },
+  {
+    q: "Which word describes someone who gets hurt feelings easily or reacts strongly to emotions?",
+    options: ["Cheerful", "Sensitive", "Stubborn", "Caring"],
+    correct: 1,
+    feedback: "✅ Sensitive = someone who is aware of and responsive to feelings. Example: 'She has always been sensitive to criticism.'"
+  },
+  {
+    q: "What do you call a person who is usually happy and makes others smile?",
+    options: ["Jealous", "Cheerful", "Honest", "Loyal"],
+    correct: 1,
+    feedback: "✅ Cheerful = someone who is happy and optimistic. Example: 'He has always been cheerful, even on bad days.'"
+  }
+];
+
+let current = 0;
+let score = 0;
+let answered = false;
+let userAnswers = [];
+
+function renderQuestion() {
+  answered = false;
+  const q = questions[current];
+  const area = document.getElementById('quizArea');
+  document.getElementById('counter').textContent = `Pregunta ${current + 1} de ${questions.length}`;
+  document.getElementById('progressFill').style.width = `${((current) / questions.length) * 100}%`;
+
+  let html = `<div class="question-box">
+    <div class="question-text">${q.q}</div>
+    <div class="options">`;
+  q.options.forEach((opt, i) => {
+    html += `<button class="option-btn" onclick="selectOption(${i})" id="opt${i}">${opt}</button>`;
+  });
+  html += `</div>
+    <div class="feedback" id="feedback"></div>
+  </div>
+  <div class="nav-btns">
+    <button class="btn btn-prev" onclick="prevQuestion()" ${current === 0 ? 'disabled' : ''}>← Anterior</button>
+    <button class="btn btn-next" id="nextBtn" onclick="nextQuestion()" disabled>Siguiente →</button>
+  </div>`;
+  area.innerHTML = html;
+}
+
+function selectOption(idx) {
+  if (answered) return;
+  answered = true;
+  const q = questions[current];
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.correct) btn.classList.add('correct');
+    else if (i === idx && i !== q.correct) btn.classList.add('wrong');
+  });
+  const fb = document.getElementById('feedback');
+  fb.classList.add('show');
+  if (idx === q.correct) {
+    fb.classList.add('correct');
+    fb.innerHTML = q.feedback;
+    score++;
+  } else {
+    fb.classList.add('wrong');
+    fb.innerHTML = `❌ Incorrecto. ${q.feedback}`;
+  }
+  userAnswers[current] = idx;
+  document.getElementById('nextBtn').disabled = false;
+}
+
+function nextQuestion() {
+  current++;
+  if (current < questions.length) {
+    renderQuestion();
+  } else {
+    showResults();
+  }
+}
+
+function prevQuestion() {
+  if (current > 0) {
+    current--;
+    renderQuestion();
+  }
+}
+
+function showResults() {
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('counter').textContent = '¡Quiz completado!';
+  const area = document.getElementById('quizArea');
+  const percent = Math.round((score / questions.length) * 100);
+  let msg = '';
+  if (percent >= 80) msg = '🎉 ¡Excelente! Dominás el vocabulario de personalidad.';
+  else if (percent >= 50) msg = '👍 ¡Bien hecho! Seguí practicando.';
+  else msg = '💪 ¡No te rindas! Repasá los adjetivos y volvé a intentar.';
+
+  area.innerHTML = `
+    <div class="score-box">
+      <div class="score-circle">${score}/${questions.length}</div>
+      <div class="score-text">${msg}</div>
+      <div class="open-question">
+        <label for="production"><strong>📝 Pregunta de producción abierta:</strong><br>Escribí una oración usando <em>Present Perfect</em> para describir a una persona importante en tu vida. Ejemplo: "She has always been reliable."</label>
+        <textarea id="production" placeholder="Escribí tu oración aquí..."></textarea>
+        <button class="btn btn-submit" onclick="submitProduction()">Enviar respuesta</button>
+      </div>
+      <button class="btn btn-restart" onclick="restartQuiz()">🔄 Reintentar Quiz</button>
+    </div>
+  `;
+}
+
+function submitProduction() {
+  const text = document.getElementById('production').value.trim();
+  if (!text) {
+    alert('Por favor, escribí una oración antes de enviar.');
+    return;
+  }
+  alert('✅ ¡Respuesta registrada!\\n\\nTu oración: "' + text + '"\\n\\n(Esto se conectaría con Google Classroom en la versión final)');
+}
+
+function restartQuiz() {
+  current = 0;
+  score = 0;
+  userAnswers = [];
+  renderQuestion();
+}
+
+renderQuestion();
+</script>
+</body>
+</html>
